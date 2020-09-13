@@ -1,0 +1,26 @@
+---
+- name: Generate helm deployment template for pre-prod
+  template: >
+     src="{{ role_path }}/files/kube2iam-values.j2"
+     dest=/tmp/kube2iam.yml
+
+# Setup kube2iam - using helm
+- name: Install kube2iam using helm
+  shell: helm install -f /tmp/kube2iam.yml --name kube2iam stable/kube2iam --namespace kube-system
+#  when: status == "present"
+  register: helm_op
+  #ignore_errors: True
+  #failed_when: "helm_op.stderr not in | search['*exists*']"
+  failed_when: "'exists' not in helm_op.stderr and helm_op.rc != 0"
+
+- debug:
+    var: helm_op
+
+# Delete kube2iam if namespace is deleted
+#- name: Delete kube2iam helm
+#  shell: helm del --purge kube2iam
+#  when: status == "absent"
+#  register: helm_op
+
+#- debug:
+#    var: helm_op

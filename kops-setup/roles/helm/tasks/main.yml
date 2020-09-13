@@ -1,0 +1,24 @@
+---
+- name: download and install helm binaries
+  become: yes
+  become_user: root
+  unarchive:
+    src: "{{ helm_url }}"
+    dest: "{{ helm_folder }}"
+    copy: no
+  tags:
+    - helm
+
+- name: Initialize helm so that directories are created.
+  command: helm init
+  ignore_errors: True
+  tags:
+    - helm
+
+- name: Setup helm stable repo
+  command: helm repo add "{{ item.name }}" "{{ item.repo }}"
+  with_items:
+    - { name: 'stable', repo: 'https://kubernetes-charts.storage.googleapis.com/' }
+    - { name: 'incubator', repo: 'https://kubernetes-charts-incubator.storage.googleapis.com/' }
+  tags:
+    - helm
